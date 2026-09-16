@@ -254,17 +254,6 @@ export default function App() {
             },
           },
         );
-        gsap.from(".philosophy-word", {
-          opacity: 0.18,
-          stagger: 0.16,
-          ease: "none",
-          scrollTrigger: {
-            trigger: ".philosophy",
-            start: "top 75%",
-            end: "bottom 60%",
-            scrub: 0.6,
-          },
-        });
       });
       media.add(
         "(min-width: 851px) and (min-height: 800px) and (prefers-reduced-motion: no-preference), (max-width: 850px) and (min-height: 700px) and (prefers-reduced-motion: no-preference)",
@@ -311,6 +300,37 @@ export default function App() {
             section.classList.remove("is-sticky");
             setActiveStep(0);
           };
+        },
+      );
+      media.add(
+        "(min-height: 600px) and (prefers-reduced-motion: no-preference)",
+        () => {
+          const section = page.current!.querySelector<HTMLElement>(
+            ".philosophy-section",
+          )!;
+          section.classList.add("is-sticky-quote");
+          const timeline = gsap.timeline({
+            scrollTrigger: {
+              trigger: section,
+              start: "top top",
+              end: "+=720",
+              scrub: true,
+            },
+          });
+          timeline.fromTo(
+            ".philosophy-word",
+            { opacity: 0.18 },
+            {
+              opacity: 1,
+              duration: 0.12,
+              stagger: { amount: 0.72 },
+              ease: "none",
+            },
+            0,
+          );
+          // Finish the fade before release and leave a short fully readable pause.
+          timeline.to({}, { duration: 0.16 }, 0.84);
+          return () => section.classList.remove("is-sticky-quote");
         },
       );
     }, page);
@@ -513,24 +533,26 @@ export default function App() {
         </section>
 
         <section
-          className="philosophy container"
+          className="philosophy-section"
           aria-labelledby="philosophy-title"
         >
-          <span className="eyebrow" data-reveal>
-            SOUND FAMILIAR?
-          </span>
-          <h2 id="philosophy-title">
-            {"“Just five minutes” shouldn’t take your whole evening."
-              .split(" ")
-              .map((word, i) => (
-                <span className="philosophy-word" key={i}>
-                  {word}{" "}
-                </span>
-              ))}
-          </h2>
-          <p data-reveal>
-            Your attention is valuable. Start treating it that way.
-          </p>
+          <div className="philosophy container">
+            <span className="eyebrow" data-reveal>
+              SOUND FAMILIAR?
+            </span>
+            <h2 id="philosophy-title">
+              {"“Just five minutes” shouldn’t take your whole evening."
+                .split(" ")
+                .map((word, i) => (
+                  <span className="philosophy-word" key={i}>
+                    {word}{" "}
+                  </span>
+                ))}
+            </h2>
+            <p data-reveal>
+              Your attention is valuable. Start treating it that way.
+            </p>
+          </div>
         </section>
 
         <section

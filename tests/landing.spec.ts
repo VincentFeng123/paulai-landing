@@ -34,7 +34,11 @@ async function expectNoOverflow(page: Page) {
 
 // Wait for the scrubbed timeline to catch up without masking a layout jump
 // behind an arbitrary delay. Four unchanged samples span several render frames.
-async function scrollToAndSettle(page: Page, top: number) {
+async function scrollToAndSettle(
+  page: Page,
+  top: number,
+  selector = ".flow-pin, .float-layer, .intro-backdrop",
+) {
   await page.evaluate(
     (y) => window.scrollTo({ top: y, behavior: "instant" }),
     top,
@@ -44,16 +48,16 @@ async function scrollToAndSettle(page: Page, top: number) {
   await expect
     .poll(
       async () => {
-        const positions = await page
-          .locator(".flow-pin, .float-layer, .intro-backdrop")
-          .evaluateAll((elements) =>
-            elements.flatMap((element) => [
+        const positions = await page.locator(selector).evaluateAll((elements) =>
+          elements.flatMap((element) => {
+            const style = getComputedStyle(element);
+            return [
               element.getBoundingClientRect().top,
-              parseFloat(
-                getComputedStyle(element).getPropertyValue("--intro-blur"),
-              ) || 0,
-            ]),
-          );
+              parseFloat(style.getPropertyValue("--intro-blur")) || 0,
+              Number(style.opacity),
+            ];
+          }),
+        );
         const unchanged =
           positions.length === previous.length &&
           positions.every(
@@ -98,6 +102,25 @@ async function backdropGeometry(page: Page) {
       imageFilter,
       overlay: getComputedStyle(backdrop, "::after").backgroundImage,
       overlayContent: getComputedStyle(backdrop, "::after").content,
+    };
+  });
+}
+
+const philosophyText = "“Just five minutes” shouldn’t take your whole evening.";
+
+async function quoteGeometry(page: Page) {
+  return page.locator(".philosophy").evaluate((element) => {
+    const title = element.querySelector<HTMLElement>("#philosophy-title")!;
+    const words = Array.from(
+      element.querySelectorAll<HTMLElement>(".philosophy-word"),
+    );
+    const rect = title.getBoundingClientRect();
+    return {
+      top: element.getBoundingClientRect().top,
+      text: title.textContent!.trim(),
+      headingTop: rect.top,
+      headingBottom: rect.bottom,
+      opacity: words.map((word) => Number(getComputedStyle(word).opacity)),
     };
   });
 }
@@ -358,10 +381,15 @@ test("reduced motion exposes all three stories in document flow", async ({
       "Reduced motion does not animate background blur",
     ).toBe(initialBlur);
   }
-  await expect(page.locator(".philosophy-word").first()).toHaveCSS(
-    "opacity",
-    "1",
+  await expect(page.locator(".philosophy-section.is-sticky-quote")).toHaveCount(
+    0,
   );
+  await page.locator(".philosophy").scrollIntoViewIfNeeded();
+  await expect(page.locator(".philosophy")).not.toHaveCSS("position", "sticky");
+  const quote = await quoteGeometry(page);
+  expect(quote.text).toBe(philosophyText);
+  expect(quote.opacity.length).toBeGreaterThan(1);
+  expect(quote.opacity.every((opacity) => opacity === 1)).toBe(true);
   await expectNoOverflow(page);
 });
 
@@ -486,6 +514,27 @@ for (const viewport of [
     ).toBeLessThanOrEqual(2);
     await scrollToAndSettle(page, start + 50);
     expect(Math.abs((await flowGeometry(page)).pinTop)).toBeLessThanOrEqual(1);
+    const headerGap = await page
+      .locator(".flow-pin")
+      .evaluate((pin, narrow) => {
+        const navigation = pin
+          .querySelector(".flow-navigation")!
+          .getBoundingClientRect();
+        const content = pin
+          .querySelector(
+            narrow ? ".flow-panel-0 .flow-copy" : ".flow-panel-0 .float-layer",
+          )!
+          .getBoundingClientRect();
+        return content.top - navigation.bottom;
+      }, viewport.width <= 850);
+    expect(
+      headerGap,
+      "Chapter navigation sits close to the story without overlapping it",
+    ).toBeGreaterThanOrEqual(viewport.width <= 850 ? 16 : 24);
+    expect(
+      headerGap,
+      "Chapter navigation and story form one visual group",
+    ).toBeLessThanOrEqual(viewport.width <= 850 ? 36 : 80);
 
     for (const [index, progress] of [0.08, 0.54, 0.88].entries()) {
       await scrollToAndSettle(page, start + 1150 * progress);
@@ -547,7 +596,95 @@ for (const viewport of [
     await page.locator("#your-space").scrollIntoViewIfNeeded();
     await expect(page.locator("#your-space h2")).toBeInViewport();
   });
+
+  test(`the ${size} quote finishes revealing before release and rewinds on reverse scroll`, async ({
+    page,
+  }) => {
+    test.setTimeout(60000);
+    await page.setViewportSize(viewport);
+    await page.emulateMedia({ reducedMotion: "no-preference" });
+    await openPage(page);
+    const section = page.locator(".philosophy-section.is-sticky-quote");
+    await expect(section).toHaveCount(1);
+    await expect(page.locator(".philosophy")).toHaveCSS("position", "sticky");
+    const start = await section.evaluate(
+      (element) => element.getBoundingClientRect().top + window.scrollY,
+    );
+    const move = (offset: number) =>
+      scrollToAndSettle(page, start + offset, ".philosophy, .philosophy-word");
+
+    await move(0);
+    const initial = await quoteGeometry(page);
+    expect(initial.text).toBe(philosophyText);
+    expect(initial.opacity.length).toBe(philosophyText.split(" ").length);
+    expect(Math.abs(initial.top)).toBeLessThanOrEqual(1);
+    for (const opacity of initial.opacity) expect(opacity).toBeCloseTo(0.18, 2);
+
+    await move(720 * 0.25);
+    const quarter = await quoteGeometry(page);
+    expect(Math.abs(quarter.top)).toBeLessThanOrEqual(1);
+    expect(quarter.opacity[0]).toBeGreaterThan(quarter.opacity.at(-1)! + 0.3);
+    expect(quarter.opacity.at(-1)).toBeCloseTo(0.18, 2);
+
+    await move(720 * 0.55);
+    const halfway = await quoteGeometry(page);
+    expect(Math.abs(halfway.top)).toBeLessThanOrEqual(1);
+    expect(
+      halfway.opacity.reduce((sum, opacity) => sum + opacity, 0),
+    ).toBeGreaterThan(
+      quarter.opacity.reduce((sum, opacity) => sum + opacity, 0) + 1,
+    );
+
+    // Leave scroll room after the last word reaches full opacity. A quote
+    // that finishes only after leaving the screen fails this assertion.
+    for (const offset of [720 * 0.92, 718]) {
+      await move(offset);
+      const complete = await quoteGeometry(page);
+      expect(Math.abs(complete.top)).toBeLessThanOrEqual(1);
+      expect(complete.headingTop).toBeGreaterThanOrEqual(0);
+      expect(complete.headingBottom).toBeLessThanOrEqual(viewport.height);
+      for (const opacity of complete.opacity)
+        expect(opacity).toBeGreaterThanOrEqual(0.995);
+    }
+
+    await move(720 * 0.25);
+    const reversed = await quoteGeometry(page);
+    expect(Math.abs(reversed.top)).toBeLessThanOrEqual(1);
+    for (const [index, opacity] of reversed.opacity.entries()) {
+      expect(
+        opacity,
+        "Each word follows the scroll position in both directions",
+      ).toBeCloseTo(quarter.opacity[index], 2);
+    }
+    expect(reversed.opacity.at(-1)).toBeCloseTo(0.18, 2);
+
+    await move(720 + 90);
+    const released = await quoteGeometry(page);
+    expect(Math.abs(released.top + 90)).toBeLessThanOrEqual(2);
+    for (const opacity of released.opacity)
+      expect(opacity).toBeGreaterThanOrEqual(0.995);
+    expect(released.text).toBe(philosophyText);
+    await expectNoOverflow(page);
+  });
 }
+
+test("short screens keep the philosophy quote static and fully readable", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 550 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await openPage(page);
+  await expect(page.locator(".philosophy-section.is-sticky-quote")).toHaveCount(
+    0,
+  );
+  await expect(page.locator(".philosophy")).not.toHaveCSS("position", "sticky");
+  await page.locator("#philosophy-title").scrollIntoViewIfNeeded();
+  await expect(page.locator("#philosophy-title")).toBeInViewport();
+  const quote = await quoteGeometry(page);
+  expect(quote.text).toBe(philosophyText);
+  expect(quote.opacity.every((opacity) => opacity === 1)).toBe(true);
+  await expectNoOverflow(page);
+});
 
 test("short desktop windows display every story without pinning or clipping", async ({
   page,

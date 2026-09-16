@@ -1429,6 +1429,10 @@ summary:focus-visible {
   flex: 1;
   min-height: 0;
 }
+.is-sticky .flow-top,
+.is-sticky .flow-navigation {
+  transform: translateY(max(0px, calc(50svh - 360px)));
+}
 .is-sticky .flow-panel {
   position: absolute;
   inset: 0;
@@ -1463,6 +1467,7 @@ summary:focus-visible {
   }
   .is-sticky .flow-navigation {
     margin-top: 0;
+    transform: translateY(24px);
   }
   .is-sticky .flow-panel {
     grid-template-columns: 1fr;
@@ -1538,5 +1543,24 @@ summary:focus-visible {
   }
   .is-sticky .scene-caption {
     margin-top: 27px;
+  }
+}
+
+/* Keep the statement still while its words become fully readable. */
+.philosophy-section.is-sticky-quote {
+  height: calc(100svh + 720px);
+}
+.is-sticky-quote .philosophy {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding-block: 100px 64px;
+}
+@media (max-width: 650px) {
+  .is-sticky-quote .philosophy {
+    padding-block: 96px 48px;
   }
 }
