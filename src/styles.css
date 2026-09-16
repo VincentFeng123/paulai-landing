@@ -1566,10 +1566,10 @@ summary:focus-visible {
   }
 }
 
-/* A real metal sculpture sits between the smoke and the foreground contrast veil. */
+/* The sculpture sits above the smoky image and its overlays, below the hero copy. */
 .hero-logo {
   position: absolute;
-  z-index: 1;
+  z-index: 5;
   top: 50%;
   left: 50%;
   width: min(86vw, 76svh);
