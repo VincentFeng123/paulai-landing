@@ -1,6 +1,6 @@
 # Paul · You had better plans.
 
-A responsive landing page for Paul, the local-first desktop companion for intentional screen time. The design uses an original asymmetrical composition, self-hosted Instrument Sans, a full-screen hero with the supplied smoky artwork in grayscale under a dark overlay, and borderless floating product moments. Paul’s original glyph and interactive desktop preview retain the app’s identity.
+A responsive landing page for Paul, the local-first desktop companion for intentional screen time. The design uses an original asymmetrical composition, self-hosted Instrument Sans, a full-screen hero with the supplied smoky artwork in grayscale under a dark overlay, a beveled 3D version of Paul’s logo with smooth polished metal and studio reflections, and borderless floating product moments. Paul’s original glyph and interactive desktop preview retain the app’s identity.
 
 ## Run
 
@@ -21,6 +21,7 @@ For a fresh test environment, install the test browser with `npx playwright inst
 
 ## Experience
 
+- A lazy-loaded Three.js hero sculpture modeled from Paul’s original SVG with a smooth metallic finish. It gently tilts toward the mouse and returns to rest when the pointer leaves. Rendering stops when it settles, reduced-motion users get a still pose, and the logo fades into the smoke with the hero scroll. It falls back to the SVG when WebGL is unavailable.
 - Interactive Today, Boundaries, and Patterns dashboard views with explicitly illustrative sample data.
 - Working preview controls for intervention levels, watched items, planned use, and pause/resume.
 - A GSAP ScrollTrigger story that moves through noticing, pausing, and choosing. The grayscale background stays sticky across the hero and story, progressively blurs during the transition, and scrolls away with the last chapter. The story uses native CSS sticky and begins its GSAP timeline only when the complete section reaches the viewport top. It fits desktop screens at least 800px tall and compact screens at least 700px tall; shorter screens remain in normal document flow. Notice, Pause, and Choose lead immediately after the hero. Individual words, prompts, and timers float with the scroll; the dashboard lifts into view and the central message reveals as you scroll. Short screens and reduced-motion layouts present all three scenes in normal document flow.
@@ -39,6 +40,7 @@ The `docs/ci-workflow.yml` template runs the production build and browser tests 
 ## Structure
 
 - `src/App.tsx` — page sections, scroll choreography, FAQ, mindful-moment dialog.
+- `src/HeroLogo.tsx` — modeled logo, smooth metal, pointer tilt, studio lighting, and rendering lifecycle.
 - `src/AppPreview.tsx` — interactive, illustrative desktop app preview.
 - `src/styles.css` and `src/preview.css` — page and preview styles.
 - `public/paul-mark.svg` and `public/paul-icon.png` — original Paul branding.

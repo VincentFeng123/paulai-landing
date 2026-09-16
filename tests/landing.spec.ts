@@ -32,6 +32,101 @@ async function expectNoOverflow(page: Page) {
   expect(sizes.content).toBeLessThanOrEqual(sizes.viewport + 1);
 }
 
+async function expectRenderedHeroLogo(page: Page) {
+  const logo = page.locator(".hero-logo");
+  await expect(logo).toHaveAttribute("data-state", "ready", { timeout: 20000 });
+  await expect(logo).toHaveAttribute("aria-hidden", "true");
+  const canvas = logo.locator("canvas");
+  await expect(canvas).toBeVisible();
+  await expect(canvas).toHaveAttribute("aria-hidden", "true");
+  const surface = await canvas.evaluate((element) => {
+    const context = (element as HTMLCanvasElement).getContext("webgl2");
+    return {
+      alpha: context?.getContextAttributes()?.alpha,
+      clearAlpha: context?.getParameter(context.COLOR_CLEAR_VALUE)[3],
+    };
+  });
+  expect(surface.alpha).toBe(true);
+  expect(surface.clearAlpha).toBe(0);
+  // The renderer is on-demand and does not preserve its drawing buffer.
+  // Compare browser-composited pixels instead of depending on another frame.
+  const bounds = (await canvas.boundingBox())!;
+  const viewport = page.viewportSize()!;
+  const clip = {
+    x: Math.max(0, bounds.x),
+    y: Math.max(0, bounds.y),
+    width:
+      Math.min(viewport.width, bounds.x + bounds.width) - Math.max(0, bounds.x),
+    height:
+      Math.min(viewport.height, bounds.y + bounds.height) -
+      Math.max(0, bounds.y),
+  };
+  expect(clip.width).toBeGreaterThan(0);
+  expect(clip.height).toBeGreaterThan(0);
+  const rendered = await page.screenshot({ clip });
+  const backgroundOnly = await page.screenshot({
+    clip,
+    style: ".hero-logo canvas { visibility: hidden !important; }",
+  });
+  expect(
+    rendered.equals(backgroundOnly),
+    "The WebGL canvas adds visible pixels to the hero",
+  ).toBe(false);
+}
+
+async function settledLogoScreenshot(page: Page) {
+  let previous: Buffer | undefined;
+  let frame: Buffer = Buffer.alloc(0);
+  await expect
+    .poll(
+      async () => {
+        frame = await page.locator(".hero-logo canvas").screenshot();
+        const stable = previous?.equals(frame) ?? false;
+        previous = frame;
+        return stable;
+      },
+      { intervals: [200], timeout: 10000 },
+    )
+    .toBe(true);
+  return frame;
+}
+
+async function screenshotDifference(page: Page, first: Buffer, second: Buffer) {
+  return page.evaluate(
+    async ([firstPng, secondPng]) => {
+      const images = await Promise.all(
+        [firstPng, secondPng].map(async (base64) => {
+          const image = new Image();
+          image.src = `data:image/png;base64,${base64}`;
+          await image.decode();
+          return image;
+        }),
+      );
+      const canvas = document.createElement("canvas");
+      canvas.width = images[0].width;
+      canvas.height = images[0].height;
+      const context = canvas.getContext("2d")!;
+      const pixels = images.map((image) => {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(image, 0, 0);
+        return context.getImageData(0, 0, canvas.width, canvas.height).data;
+      });
+      let difference = 0;
+      let samples = 0;
+      for (let index = 0; index < pixels[0].length; index += 16) {
+        for (let color = 0; color < 3; color += 1) {
+          difference += Math.abs(
+            pixels[0][index + color] - pixels[1][index + color],
+          );
+          samples += 1;
+        }
+      }
+      return difference / (samples * 255);
+    },
+    [first.toString("base64"), second.toString("base64")],
+  );
+}
+
 // Wait for the scrubbed timeline to catch up without masking a layout jump
 // behind an arbitrary delay. Four unchanged samples span several render frames.
 async function scrollToAndSettle(
@@ -355,8 +450,24 @@ test("the mobile header opens the preview directly", async ({ page }) => {
 test("reduced motion exposes all three stories in document flow", async ({
   page,
 }) => {
+  test.setTimeout(60000);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await openPage(page);
+  const canvas = page.locator('.hero-logo[data-state="ready"] canvas');
+  await expect(canvas).toBeVisible({ timeout: 20000 });
+  const viewport = page.viewportSize()!;
+  await page.mouse.move(viewport.width * 0.15, viewport.height * 0.55);
+  const firstFrame = await canvas.screenshot();
+  await page.mouse.move(viewport.width * 0.85, viewport.height * 0.55, {
+    steps: 6,
+  });
+  // Observe a real interval: reduced motion must ignore pointer-follow tilt.
+  await page.waitForTimeout(750);
+  const secondFrame = await canvas.screenshot();
+  expect(
+    secondFrame.equals(firstFrame),
+    "Reduced motion keeps the 3D logo still during pointer movement",
+  ).toBe(true);
   await expect(page.locator(".flow-section.is-sticky")).toHaveCount(0);
   await expect(page.locator(".flow-panel")).toHaveCount(3);
   const initialBlur = (await backdropGeometry(page)).blur;
@@ -390,6 +501,17 @@ test("reduced motion exposes all three stories in document flow", async ({
   expect(quote.text).toBe(philosophyText);
   expect(quote.opacity.length).toBeGreaterThan(1);
   expect(quote.opacity.every((opacity) => opacity === 1)).toBe(true);
+  await expect(page.locator(".hero-logo")).toHaveAttribute(
+    "data-visible",
+    "false",
+  );
+  await expect(page.locator(".hero-logo")).toHaveCSS("visibility", "hidden");
+  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await expect(page.locator(".hero-logo")).toHaveAttribute(
+    "data-visible",
+    "true",
+  );
+  await expect(page.locator(".hero-logo")).toBeVisible();
   await expectNoOverflow(page);
 });
 
@@ -402,7 +524,9 @@ for (const viewport of [
   test(`the hero fills the ${size} viewport with grayscale artwork and a dark overlay`, async ({
     page,
   }) => {
+    test.setTimeout(60000);
     await page.setViewportSize(viewport);
+    await page.emulateMedia({ reducedMotion: "reduce" });
     await openPage(page);
     const artwork = page.locator(".hero-background");
     await expect(artwork).toBeVisible();
@@ -435,7 +559,16 @@ for (const viewport of [
     expect(background.imageFilter).toMatch(/grayscale\(1\)/);
     expect(background.overlayContent).not.toBe("none");
     expect(background.overlay).toMatch(/rgba?\(0,\s*0,\s*0/);
+    await expectRenderedHeroLogo(page);
     await expectNoOverflow(page);
+    await page
+      .locator(".hero")
+      .getByRole("link", { name: "Explore Paul", exact: true })
+      .click();
+    await expect(page).toHaveURL(/#experience$/);
+    await expect(
+      page.getByRole("tab", { name: "Today", exact: true }),
+    ).toBeInViewport();
   });
 
   test(`the ${size} sticky story enters smoothly, advances, and releases`, async ({
@@ -667,6 +800,96 @@ for (const viewport of [
     await expectNoOverflow(page);
   });
 }
+
+test("the hero logo responds to the pointer and returns toward its neutral pose", async ({
+  page,
+}) => {
+  test.setTimeout(60000);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.emulateMedia({ reducedMotion: "no-preference" });
+  await openPage(page);
+  await expect(page.locator(".hero-logo")).toHaveAttribute(
+    "data-state",
+    "ready",
+    { timeout: 20000 },
+  );
+  await page
+    .locator(".site-header")
+    .getByRole("link", { name: "Paul home" })
+    .hover();
+  const neutral = await settledLogoScreenshot(page);
+  await page.mouse.move(1440 * 0.15, 550, { steps: 6 });
+  const left = await settledLogoScreenshot(page);
+  await page.mouse.move(1440 * 0.85, 550, { steps: 6 });
+  const right = await settledLogoScreenshot(page);
+  const leftShift = await screenshotDifference(page, neutral, left);
+  const rightShift = await screenshotDifference(page, neutral, right);
+  expect(
+    leftShift,
+    "Moving left changes the rendered model pose",
+  ).toBeGreaterThan(0.0001);
+  expect(
+    rightShift,
+    "Moving right changes the rendered model pose",
+  ).toBeGreaterThan(0.0001);
+  expect(
+    await screenshotDifference(page, left, right),
+    "Opposite pointer positions produce different poses",
+  ).toBeGreaterThan(0.0001);
+  await page
+    .locator(".site-header")
+    .getByRole("link", { name: "Paul home" })
+    .hover();
+  const returned = await settledLogoScreenshot(page);
+  expect(
+    await screenshotDifference(page, neutral, returned),
+    "Leaving the hero restores the neutral pose",
+  ).toBeLessThan(Math.max(leftShift, rightShift) * 0.25);
+  await expectNoOverflow(page);
+});
+
+test("the hero keeps a usable SVG fallback when WebGL is unavailable", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
+      kind: string,
+      options?: unknown,
+    ) {
+      if (["webgl2", "webgl", "experimental-webgl"].includes(kind)) return null;
+      return Reflect.apply(original, this, [kind, options]);
+    } as typeof original;
+  });
+  await openPage(page);
+  const logo = page.locator(".hero-logo");
+  await expect(logo).toHaveAttribute("data-state", "fallback", {
+    timeout: 20000,
+  });
+  await expect(logo).toHaveAttribute("aria-hidden", "true");
+  const fallback = logo.locator(".hero-logo-fallback");
+  await expect(fallback).toBeVisible();
+  await expect
+    .poll(() =>
+      fallback.evaluate(
+        (element) =>
+          (element as HTMLImageElement).complete &&
+          (element as HTMLImageElement).naturalWidth > 0,
+      ),
+    )
+    .toBe(true);
+  await expect(logo.locator("canvas")).toHaveCount(0);
+  await page
+    .locator(".hero")
+    .getByRole("link", { name: "Explore Paul", exact: true })
+    .click();
+  await expect(page).toHaveURL(/#experience$/);
+  await expect(
+    page.getByRole("tab", { name: "Today", exact: true }),
+  ).toBeInViewport();
+  await expectNoOverflow(page);
+});
 
 test("short screens keep the philosophy quote static and fully readable", async ({
   page,

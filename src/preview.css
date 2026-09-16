@@ -798,6 +798,194 @@
     font-size: 12px;
   }
 }
+/* Keep the desktop preview compact while preserving the mobile control sizes. */
+@media (min-width: 851px) {
+  .app-preview {
+    font-size: 14px;
+  }
+  .app-preview h4 {
+    font-size: 15px;
+  }
+  .preview-body {
+    grid-template-columns: 184px minmax(0, 1fr);
+    min-height: 620px;
+  }
+  .preview-sidebar {
+    padding: 30px 16px 20px;
+  }
+  .preview-brand {
+    gap: 8px;
+    margin: 0 0 36px 9px;
+  }
+  .preview-brand .preview-mark {
+    width: 27px;
+    height: 27px;
+  }
+  .preview-brand > span:last-child {
+    font-size: 28px;
+  }
+  .preview-navigation {
+    gap: 7px;
+  }
+  .preview-navigation button {
+    gap: 10px;
+    padding: 12px;
+    min-height: 44px;
+  }
+  .preview-navigation svg {
+    width: 18px;
+    height: 18px;
+  }
+  .preview-sidebar-note {
+    padding: 30px 9px 0;
+  }
+  .preview-sidebar-note .preview-mark {
+    width: 21px;
+    height: 21px;
+    margin-bottom: 12px;
+  }
+  .preview-sidebar-note h4 {
+    font-size: 14px;
+  }
+  .preview-page-heading p,
+  .preview-watch-name strong {
+    font-size: 14px;
+  }
+  .preview-sidebar-note p {
+    font-size: 13px;
+  }
+  .preview-sidebar-status {
+    padding: 26px 9px 0;
+    font-size: 12px;
+  }
+  .preview-main {
+    padding: 34px clamp(26px, 2.65vw, 38px) 20px;
+  }
+  .preview-page-heading {
+    padding-bottom: 24px;
+  }
+  .preview-page-heading h3 {
+    font-size: 32px;
+  }
+  .preview-page-heading p {
+    margin-top: 10px;
+  }
+  .preview-today-label,
+  .preview-section-heading p,
+  .preview-boundary-tag,
+  .preview-monitor,
+  .preview-small,
+  .preview-planned p,
+  .preview-interaction-note,
+  .preview-pattern-summary > p {
+    font-size: 13px;
+  }
+  .preview-stats {
+    padding-block: 20px;
+  }
+  .preview-stat {
+    padding-inline: 20px;
+  }
+  .preview-stat:first-child {
+    padding-left: 0;
+  }
+  .preview-stat > span {
+    font-size: 14px;
+    min-height: 0;
+  }
+  .preview-stat strong {
+    font-size: 42px;
+    margin-top: 8px;
+  }
+  .preview-stat strong small {
+    font-size: 18px;
+  }
+  .preview-rhythm {
+    padding-top: 24px;
+  }
+  .preview-period {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+  .preview-chart {
+    height: 140px;
+    padding-top: 20px;
+  }
+  .preview-chart-days {
+    padding-top: 10px;
+    font-size: 12px;
+  }
+  .preview-watched {
+    margin-top: 24px;
+  }
+  .preview-watched-row {
+    gap: 12px;
+    padding-block: 14px;
+  }
+  .preview-site-icon {
+    width: 36px;
+    height: 36px;
+  }
+  .preview-site-icon svg {
+    width: 18px;
+    height: 18px;
+  }
+  .preview-watch-name small {
+    font-size: 12px;
+  }
+  .preview-monitor {
+    padding-top: 10px;
+  }
+  .preview-level-card {
+    padding: 22px;
+  }
+  .preview-levels {
+    margin-block: 20px;
+  }
+  .preview-level-description {
+    min-height: 55px;
+  }
+  .preview-level-description strong {
+    font-size: 16px;
+  }
+  .preview-level-description p,
+  .preview-pattern-summary > div > span,
+  .preview-insight p {
+    font-size: 14px;
+  }
+  .preview-boundary-items {
+    margin-top: 26px;
+  }
+  .preview-toggle-row {
+    gap: 12px;
+    padding-block: 15px;
+  }
+  .preview-planned {
+    gap: 12px;
+    padding: 20px;
+    margin-top: 22px;
+  }
+  .preview-interaction-note {
+    margin-top: 18px !important;
+  }
+  .preview-pattern-summary {
+    gap: 15px;
+    padding-block: 22px;
+  }
+  .preview-pattern-summary strong {
+    gap: 12px;
+    font-size: 28px;
+  }
+  .preview-insight {
+    gap: 14px;
+    padding: 23px;
+    margin-top: 28px;
+  }
+  .preview-insight span {
+    margin-top: 12px;
+    font-size: 12px;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .app-preview *,
   .app-preview *::before {

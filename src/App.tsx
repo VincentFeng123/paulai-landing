@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
   ArrowRight,
@@ -14,6 +14,8 @@ import {
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import AppPreview from "./AppPreview";
+
+const HeroLogo = lazy(() => import("./HeroLogo"));
 
 gsap.registerPlugin(ScrollTrigger);
 const asset = (name: string) => `${import.meta.env.BASE_URL}${name}`;
@@ -212,6 +214,7 @@ export default function App() {
         gsap.to(".intro-backdrop", {
           "--intro-blur": "14px",
           "--intro-shade": 0.18,
+          "--logo-opacity": 0,
           ease: "none",
           scrollTrigger: {
             trigger: ".hero-shell",
@@ -368,6 +371,10 @@ export default function App() {
               height="1600"
               fetchPriority="high"
             />
+            <Suspense fallback={null}>
+              <HeroLogo />
+            </Suspense>
+            <div className="hero-smoke-veil" />
           </div>
           <div className="intro-content">
             <section className="hero-shell" aria-labelledby="hero-title">
