@@ -1,6 +1,6 @@
 # Paul · You had better plans.
 
-A responsive landing page for Paul, the local-first desktop companion for intentional screen time. The design uses an original asymmetrical composition, self-hosted Instrument Sans, a full-screen hero with the supplied smoky artwork, and borderless floating product moments. Paul’s original glyph and interactive desktop preview retain the app’s identity.
+A responsive landing page for Paul, the local-first desktop companion for intentional screen time. The design uses an original asymmetrical composition, self-hosted Instrument Sans, a full-screen hero with the supplied smoky artwork in grayscale under a dark overlay, and borderless floating product moments. Paul’s original glyph and interactive desktop preview retain the app’s identity.
 
 ## Run
 
@@ -23,7 +23,7 @@ For a fresh test environment, install the test browser with `npx playwright inst
 
 - Interactive Today, Boundaries, and Patterns dashboard views with explicitly illustrative sample data.
 - Working preview controls for intervention levels, watched items, planned use, and pause/resume.
-- A GSAP ScrollTrigger story that moves through noticing, pausing, and choosing. Large desktop scenes (at least 1100px wide and 900px tall) are pinned for a short scroll and scrub with native scrolling. Notice, Pause, and Choose lead immediately after the hero. Individual words, prompts, and timers float with the scroll; the dashboard lifts into view and the central message reveals as you scroll. Smaller screens and reduced-motion layouts present all three scenes in normal document flow.
+- A GSAP ScrollTrigger story that moves through noticing, pausing, and choosing. The story uses native CSS sticky and begins its GSAP timeline only when the complete section reaches the viewport top. It fits desktop screens at least 800px tall and compact screens at least 700px tall; shorter screens remain in normal document flow. Notice, Pause, and Choose lead immediately after the hero. Individual words, prompts, and timers float with the scroll; the dashboard lifts into view and the central message reveals as you scroll. Short screens and reduced-motion layouts present all three scenes in normal document flow.
 - A sparse header with a direct preview link, native FAQ disclosures, keyboard-accessible tabs, and a native modal demo with focus restoration.
 - All preview state lives in memory. The site makes no analytics, form, AI, or activity-recording requests.
 

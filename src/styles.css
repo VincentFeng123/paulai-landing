@@ -1334,6 +1334,7 @@ summary:focus-visible {
   height: 100%;
   object-fit: cover;
   object-position: center;
+  filter: grayscale(1);
   pointer-events: none;
 }
 .hero-shell::before {
@@ -1343,7 +1344,7 @@ summary:focus-visible {
   z-index: -1;
   pointer-events: none;
   background:
-    linear-gradient(90deg, #0005, #0003 55%, #0007),
+    linear-gradient(90deg, #0008, #0006 55%, #0009),
     linear-gradient(to top, #000 0%, #0008 9%, transparent 38%);
 }
 .hero {
@@ -1375,6 +1376,133 @@ summary:focus-visible {
     object-position: 62% center;
   }
   .hero-shell::before {
-    background: linear-gradient(#0003, #0005 65%, #000);
+    background: linear-gradient(#0006, #0008 65%, #000);
+  }
+}
+
+/* The chapter stays in normal flow until its full viewport reaches the top. */
+.flow-section.is-sticky {
+  height: calc(100svh + 1150px);
+}
+.is-sticky .flow-pin {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  padding: 100px 0 20px;
+}
+.is-sticky .flow-panels {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.is-sticky .flow-panel {
+  position: absolute;
+  inset: 0;
+  padding-block: 20px;
+}
+.is-sticky .scroll-cue {
+  display: flex;
+}
+.is-sticky .flow-track {
+  display: block;
+}
+.is-sticky .flow-step-labels {
+  padding-top: 18px;
+}
+.is-sticky .flow-step-labels > span {
+  color: #888;
+}
+.is-sticky .flow-step-labels > span.active {
+  color: #fff;
+}
+.is-sticky .intervention-scene {
+  min-height: 0;
+  padding-block: 0;
+}
+@media (max-width: 850px) {
+  .is-sticky .flow-pin {
+    padding-top: 92px;
+    padding-bottom: 16px;
+  }
+  .is-sticky .flow-top {
+    display: none;
+  }
+  .is-sticky .flow-navigation {
+    margin-top: 0;
+  }
+  .is-sticky .flow-panel {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+    gap: 18px;
+    padding: 24px 0 6px;
+  }
+  .is-sticky .flow-copy {
+    max-width: 100%;
+  }
+  .is-sticky .step-label,
+  .is-sticky .flow-copy > p {
+    display: none;
+  }
+  .is-sticky .flow-copy h2 {
+    font-size: 34px;
+    line-height: 1.07;
+    margin: 0;
+  }
+  .is-sticky .flow-annotation {
+    font-size: 13px;
+    margin-top: 12px;
+    line-height: 1.4;
+  }
+  .is-sticky .intervention-scene {
+    padding: 0;
+  }
+  .is-sticky .floating-notice {
+    max-width: 330px;
+  }
+  .is-sticky .floating-notice .floating-domain {
+    font-size: 14px;
+    margin-bottom: 15px;
+  }
+  .is-sticky .floating-mark {
+    width: 30px;
+    height: 30px;
+    margin-bottom: 16px;
+  }
+  .is-sticky .floating-question {
+    font-size: 34px;
+  }
+  .is-sticky .floating-answers {
+    margin-top: 22px;
+    gap: 13px;
+  }
+  .is-sticky .floating-answers > span {
+    font-size: 17px;
+  }
+  .is-sticky .floating-answers > span + span {
+    font-size: 14px;
+  }
+  .is-sticky .floating-overline {
+    font-size: 11px;
+  }
+  .is-sticky .floating-timer {
+    font-size: clamp(104px, 25vw, 142px);
+    margin-top: 24px;
+  }
+  .is-sticky .floating-caption {
+    font-size: 21px;
+    margin-top: 21px;
+  }
+  .is-sticky .floating-pause .floating-answers {
+    margin-top: 26px;
+  }
+  .is-sticky .floating-time-rule {
+    margin-top: 25px;
+  }
+  .is-sticky .floating-planned .floating-domain {
+    font-size: 14px;
+    margin-top: 20px;
+  }
+  .is-sticky .scene-caption {
+    margin-top: 27px;
   }
 }

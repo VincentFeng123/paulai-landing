@@ -256,77 +256,50 @@ export default function App() {
         });
       });
       media.add(
-        "(min-width: 1100px) and (min-height: 900px) and (prefers-reduced-motion: no-preference)",
+        "(min-width: 851px) and (min-height: 800px) and (prefers-reduced-motion: no-preference), (max-width: 850px) and (min-height: 700px) and (prefers-reduced-motion: no-preference)",
         () => {
+          const section =
+            page.current!.querySelector<HTMLElement>(".flow-section")!;
           const panels = gsap.utils.toArray<HTMLElement>(".flow-panel");
-          gsap.set(".flow-pin", { height: "100svh" });
-          gsap.set(".flow-panels", { position: "relative", flex: 1 });
-          gsap.set(panels, { position: "absolute", inset: 0 });
-          gsap.set(panels.slice(1), { autoAlpha: 0, y: 28 });
+          // Native sticky keeps entry and release in normal document flow.
+          section.classList.add("is-sticky");
+          gsap.set(panels.slice(1), { autoAlpha: 0 });
           const timeline = gsap.timeline({
             scrollTrigger: {
-              trigger: ".flow-pin",
+              trigger: section,
               start: "top top",
               end: "+=1150",
               scrub: 0.65,
-              pin: true,
-              anticipatePin: 1,
               onUpdate: (self) =>
                 setActiveStep(Math.min(2, Math.floor(self.progress * 3))),
             },
           });
           timeline
             .to(".flow-progress", { scaleX: 1, duration: 3, ease: "none" }, 0)
-            .to(panels[0], { autoAlpha: 0, y: -24, duration: 0.25 }, 0.85)
-            .to(panels[1], { autoAlpha: 1, y: 0, duration: 0.35 }, 1.0)
-            .to(panels[1], { autoAlpha: 0, y: -24, duration: 0.25 }, 1.85)
-            .to(panels[2], { autoAlpha: 1, y: 0, duration: 0.35 }, 2.0);
+            .to(panels[0], { autoAlpha: 0, duration: 0.25 }, 0.85)
+            .to(panels[1], { autoAlpha: 1, duration: 0.35 }, 1.0)
+            .to(panels[1], { autoAlpha: 0, duration: 0.25 }, 1.85)
+            .to(panels[2], { autoAlpha: 1, duration: 0.35 }, 2.0);
           panels.forEach((panel, chapter) => {
-            const layers = panel.querySelectorAll<HTMLElement>(".float-layer");
-            layers.forEach((layer, index) => {
-              const distance = 24 + (index % 3) * 15;
-              timeline.fromTo(
-                layer,
-                { y: distance },
-                {
-                  y: -distance * 0.35,
-                  duration: 0.85,
-                  ease: "none",
-                  immediateRender: false,
-                },
-                chapter + 0.08,
-              );
-            });
+            panel
+              .querySelectorAll<HTMLElement>(".float-layer")
+              .forEach((layer, index) => {
+                // Start at its natural position; never reset a visible layer mid-scroll.
+                timeline.to(
+                  layer,
+                  {
+                    y: -(8 + (index % 3) * 5),
+                    duration: 0.85,
+                    ease: "none",
+                  },
+                  chapter + 0.08,
+                );
+              });
           });
-          return () => setActiveStep(0);
-        },
-      );
-      media.add(
-        "(prefers-reduced-motion: no-preference) and (max-width: 1099px), (prefers-reduced-motion: no-preference) and (max-height: 899px)",
-        () => {
-          gsap.utils
-            .toArray<HTMLElement>(".intervention-scene")
-            .forEach((scene) => {
-              scene
-                .querySelectorAll<HTMLElement>(".float-layer")
-                .forEach((layer, index) => {
-                  const distance = 28 + (index % 3) * 17;
-                  gsap.fromTo(
-                    layer,
-                    { y: distance },
-                    {
-                      y: -distance * 0.4,
-                      ease: "none",
-                      scrollTrigger: {
-                        trigger: scene,
-                        start: "top bottom",
-                        end: "bottom top",
-                        scrub: 0.8,
-                      },
-                    },
-                  );
-                });
-            });
+          return () => {
+            section.classList.remove("is-sticky");
+            setActiveStep(0);
+          };
         },
       );
     }, page);
