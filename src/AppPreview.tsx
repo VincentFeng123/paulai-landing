@@ -93,7 +93,7 @@ function RhythmChart() {
                 cy={cy}
                 r="3"
                 fill="currentColor"
-                stroke="#111111"
+                stroke="#000000"
                 strokeWidth="1.5"
               />
             ))}
@@ -139,15 +139,6 @@ export default function AppPreview() {
       className="app-preview"
       aria-label="Interactive Paul desktop app preview"
     >
-      <div className="preview-titlebar">
-        <div className="preview-window-dots" aria-hidden="true">
-          <i />
-          <i />
-          <i />
-        </div>
-        <span>Paul</span>
-        <span className="preview-window-label">Interactive preview</span>
-      </div>
       <div className="preview-body">
         <aside className="preview-sidebar">
           <div className="preview-brand">

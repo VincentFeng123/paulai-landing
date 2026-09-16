@@ -42,11 +42,6 @@ const steps = [
     description:
       "You went online for one thing. Now you’re somewhere else. Paul notices when you open the apps and sites you’ve chosen to watch.",
     icon: Eye,
-    heading: "A familiar detour.",
-    sub: "You opened youtube.com",
-    question: "What did you come here for?",
-    choices: ["Something specific", "Just browsing"],
-    foot: "A little awareness goes a long way.",
   },
   {
     label: "Make a little space",
@@ -60,11 +55,6 @@ const steps = [
     description:
       "A gentle check-in creates a little room between the impulse and the next click. Choose the amount of support that feels right for you.",
     icon: Pause,
-    heading: "One small pause.",
-    sub: "A moment with Paul",
-    question: "Could this wait five minutes?",
-    choices: ["Take a little break", "Open anyway"],
-    foot: "One intervention per session. Room to breathe.",
   },
   {
     label: "Choose what’s next",
@@ -78,11 +68,6 @@ const steps = [
     description:
       "Stay for a reason. Set aside some time. Or close the tab. Planned use gives you room to enjoy your screen on purpose.",
     icon: SlidersHorizontal,
-    heading: "Time, on your terms.",
-    sub: "You’re in charge",
-    question: "YouTube · Planned use",
-    choices: ["Make a little room", "Continue with intention"],
-    foot: "Small choices. A little more intention.",
   },
 ];
 const faqs = [
@@ -258,16 +243,6 @@ export default function App() {
             },
           },
         );
-        gsap.to(".hero-backdrop", {
-          y: 90,
-          ease: "none",
-          scrollTrigger: {
-            trigger: ".hero-shell",
-            start: "top top",
-            end: "bottom top",
-            scrub: 1,
-          },
-        });
         gsap.from(".philosophy-word", {
           opacity: 0.18,
           stagger: 0.16,
@@ -281,7 +256,7 @@ export default function App() {
         });
       });
       media.add(
-        "(min-width: 1100px) and (min-height: 1000px) and (prefers-reduced-motion: no-preference)",
+        "(min-width: 1100px) and (min-height: 900px) and (prefers-reduced-motion: no-preference)",
         () => {
           const panels = gsap.utils.toArray<HTMLElement>(".flow-panel");
           gsap.set(".flow-pin", { height: "100svh" });
@@ -306,7 +281,52 @@ export default function App() {
             .to(panels[1], { autoAlpha: 1, y: 0, duration: 0.35 }, 1.0)
             .to(panels[1], { autoAlpha: 0, y: -24, duration: 0.25 }, 1.85)
             .to(panels[2], { autoAlpha: 1, y: 0, duration: 0.35 }, 2.0);
+          panels.forEach((panel, chapter) => {
+            const layers = panel.querySelectorAll<HTMLElement>(".float-layer");
+            layers.forEach((layer, index) => {
+              const distance = 24 + (index % 3) * 15;
+              timeline.fromTo(
+                layer,
+                { y: distance },
+                {
+                  y: -distance * 0.35,
+                  duration: 0.85,
+                  ease: "none",
+                  immediateRender: false,
+                },
+                chapter + 0.08,
+              );
+            });
+          });
           return () => setActiveStep(0);
+        },
+      );
+      media.add(
+        "(prefers-reduced-motion: no-preference) and (max-width: 1099px), (prefers-reduced-motion: no-preference) and (max-height: 899px)",
+        () => {
+          gsap.utils
+            .toArray<HTMLElement>(".intervention-scene")
+            .forEach((scene) => {
+              scene
+                .querySelectorAll<HTMLElement>(".float-layer")
+                .forEach((layer, index) => {
+                  const distance = 28 + (index % 3) * 17;
+                  gsap.fromTo(
+                    layer,
+                    { y: distance },
+                    {
+                      y: -distance * 0.4,
+                      ease: "none",
+                      scrollTrigger: {
+                        trigger: scene,
+                        start: "top bottom",
+                        end: "bottom top",
+                        scrub: 0.8,
+                      },
+                    },
+                  );
+                });
+            });
         },
       );
     }, page);
@@ -335,31 +355,142 @@ export default function App() {
       </header>
       <main id="main">
         <section className="hero-shell" aria-labelledby="hero-title">
-          <img
-            className="hero-backdrop"
-            src={asset("hero-wall-shadows.jpg")}
-            alt=""
-            width="2400"
-            height="1600"
-            fetchPriority="high"
-          />
           <div className="hero container">
             <h1 className="hero-enter" id="hero-title">
-              Less scrolling.
+              You had
               <br />
-              More living.
+              <span>better plans.</span>
             </h1>
-            <p className="hero-enter hero-description">
-              Your time is yours. Paul helps you notice distracting habits, set
-              your boundaries, and make room for what matters.
-            </p>
-            <div className="hero-enter hero-actions">
-              <a className="button primary" href="#experience">
-                Explore Paul
-              </a>
-              <a className="button secondary" href="#how-it-works">
-                See how it works
-              </a>
+            <div className="hero-support hero-enter">
+              <p className="hero-description">
+                Paul helps you catch the mindless scroll, take a breath, and get
+                back to what you meant to do.
+              </p>
+              <div className="hero-actions">
+                <a className="button primary" href="#experience">
+                  Explore Paul <ArrowUpRight size={19} />
+                </a>
+                <a className="hero-story-link" href="#how-it-works">
+                  Meet your moment of pause <ArrowDown size={16} />
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          className="flow-section"
+          id="how-it-works"
+          aria-label="How Paul works"
+        >
+          <div className="flow-pin">
+            <div className="flow-top container">
+              <span className="eyebrow">01. HOW PAUL HELPS</span>
+              <span className="scroll-cue">
+                SCROLL TO EXPLORE <ArrowDown size={13} />
+              </span>
+            </div>
+            <div className="flow-navigation container">
+              <div className="flow-track">
+                <span className="flow-progress" />
+              </div>
+              <div className="flow-step-labels">
+                {steps.map((s, i) => (
+                  <span
+                    className={activeStep === i ? "active" : ""}
+                    key={s.label}
+                  >
+                    0{i + 1} <span>{["Notice", "Pause", "Choose"][i]}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+            <div className="flow-panels container">
+              {steps.map((step, index) => (
+                <article
+                  className={`flow-panel flow-panel-${index}`}
+                  key={step.label}
+                >
+                  <div className="flow-copy">
+                    <div className="step-label">
+                      <span>0{index + 1}</span>
+                      {step.label}
+                    </div>
+                    <h2>{step.title}</h2>
+                    <p>{step.description}</p>
+                    <div className="flow-annotation">
+                      <step.icon size={15} strokeWidth={1.5} />
+                      {index === 0
+                        ? "You choose what Paul watches."
+                        : index === 1
+                          ? "Five levels. As gentle or firm as you need."
+                          : "No streaks. No scores. Just you, learning."}
+                    </div>
+                  </div>
+                  <div
+                    className={`intervention-scene scene-${index}`}
+                    aria-label={`Illustrative preview: ${step.label}`}
+                  >
+                    {index === 0 ? (
+                      <div className="floating-notice">
+                        <span className="floating-domain float-layer">
+                          youtube.com <ArrowUpRight size={16} />
+                        </span>
+                        <Mark className="floating-mark float-layer" />
+                        <p className="floating-question float-layer">
+                          What did you
+                          <br />
+                          come here for?
+                        </p>
+                        <div className="floating-answers float-layer">
+                          <span>
+                            Something specific <ArrowRight size={19} />
+                          </span>
+                          <span>Just browsing</span>
+                        </div>
+                      </div>
+                    ) : index === 1 ? (
+                      <div className="floating-pause">
+                        <span className="floating-overline float-layer">
+                          A LITTLE SPACE TO DECIDE
+                        </span>
+                        <div className="floating-timer float-layer">
+                          05<span>:00</span>
+                        </div>
+                        <p className="floating-caption float-layer">
+                          The feed can wait.
+                        </p>
+                        <div className="floating-answers float-layer">
+                          <span>
+                            Take a breath <Pause size={18} />
+                          </span>
+                          <span>Or continue. It’s your call.</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="floating-planned">
+                        <span className="floating-overline float-layer">
+                          TIME YOU CHOSE
+                        </span>
+                        <div className="floating-timer float-layer">
+                          20<span>:00</span>
+                        </div>
+                        <span
+                          className="floating-time-rule float-layer"
+                          aria-hidden="true"
+                        />
+                        <p className="floating-caption float-layer">
+                          A tutorial. Then back to your day.
+                        </p>
+                        <span className="floating-domain float-layer">
+                          YouTube · Planned use
+                        </span>
+                      </div>
+                    )}
+                    <span className="scene-caption">ILLUSTRATIVE PREVIEW</span>
+                  </div>
+                </article>
+              ))}
             </div>
           </div>
         </section>
@@ -400,102 +531,6 @@ export default function App() {
           <p data-reveal>
             Your attention is valuable. Start treating it that way.
           </p>
-        </section>
-
-        <section
-          className="flow-section"
-          id="how-it-works"
-          aria-label="How Paul works"
-        >
-          <div className="flow-pin">
-            <div className="flow-top container">
-              <span className="eyebrow">01. HOW PAUL HELPS</span>
-              <span className="scroll-cue">
-                SCROLL TO EXPLORE <ArrowDown size={13} />
-              </span>
-            </div>
-            <div className="flow-panels container">
-              {steps.map((step, index) => (
-                <article
-                  className={`flow-panel flow-panel-${index}`}
-                  key={step.label}
-                >
-                  <div className="flow-copy">
-                    <div className="step-label">
-                      <span>0{index + 1}</span>
-                      {step.label}
-                    </div>
-                    <h2>{step.title}</h2>
-                    <p>{step.description}</p>
-                    <div className="flow-annotation">
-                      <step.icon size={15} strokeWidth={1.5} />
-                      {index === 0
-                        ? "You choose what Paul watches."
-                        : index === 1
-                          ? "Five levels. As gentle or firm as you need."
-                          : "No streaks. No scores. Just you, learning."}
-                    </div>
-                  </div>
-                  <div className={`intervention-scene scene-${index}`}>
-                    <div className="intervention-card">
-                      <div className="intervention-top">
-                        <span className="brand">
-                          <Mark />
-                          paul
-                        </span>
-                      </div>
-                      <div className="intervention-icon">
-                        <step.icon size={25} strokeWidth={1.3} />
-                      </div>
-                      <p className="intervention-heading">{step.heading}</p>
-                      <span className="intervention-sub">{step.sub}</span>
-                      {index === 1 && (
-                        <div className="pause-meter" aria-hidden="true">
-                          {Array.from({ length: 10 }, (_, i) => (
-                            <span key={i} />
-                          ))}
-                        </div>
-                      )}
-                      {index === 2 && (
-                        <div className="planned-time">
-                          20<span>:00</span>
-                          <small>TIME YOU CHOSE</small>
-                        </div>
-                      )}
-                      <p className="intervention-question">{step.question}</p>
-                      <div
-                        className="illustrated-choices"
-                        aria-label="Example choices"
-                      >
-                        <span>
-                          {step.choices[0]}
-                          <ArrowUpRight size={14} />
-                        </span>
-                        <span>{step.choices[1]}</span>
-                      </div>
-                      <div className="intervention-foot">{step.foot}</div>
-                    </div>
-                    <span className="scene-caption">ILLUSTRATIVE PREVIEW</span>
-                  </div>
-                </article>
-              ))}
-            </div>
-            <div className="flow-bottom container">
-              <div className="flow-track">
-                <span className="flow-progress" />
-              </div>
-              <div className="flow-step-labels">
-                {steps.map((s, i) => (
-                  <span
-                    className={activeStep === i ? "active" : ""}
-                    key={s.label}
-                  >
-                    0{i + 1} <span>{["Notice", "Pause", "Choose"][i]}</span>
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
         </section>
 
         <section
@@ -572,31 +607,24 @@ export default function App() {
           </div>
         </section>
 
-        <section className="closing" aria-labelledby="closing-title">
-          <img
-            className="closing-backdrop"
-            src={asset("closing-black-ribbons.jpg")}
-            alt=""
-            width="2400"
-            height="1200"
-            loading="lazy"
-          />
+        <section className="closing container" aria-labelledby="closing-title">
           <h2 id="closing-title" data-reveal>
-            There’s a whole life
+            Go do
             <br />
-            <span>on the other side.</span>
+            <span>your thing.</span>
           </h2>
-          <p data-reveal>Start by taking a moment back.</p>
-          <button
-            className="button primary"
-            onClick={() => setMomentOpen(true)}
-            data-reveal
-          >
-            Try a moment with Paul <ArrowUpRight size={17} />
-          </button>
-          <span className="closing-note">
-            An interactive preview. No sign-up needed.
-          </span>
+          <div className="closing-actions" data-reveal>
+            <p>Start with one intentional moment.</p>
+            <button
+              className="button primary"
+              onClick={() => setMomentOpen(true)}
+            >
+              Try a moment with Paul <ArrowUpRight size={17} />
+            </button>
+            <span className="closing-note">
+              An interactive preview. No sign-up needed.
+            </span>
+          </div>
         </section>
       </main>
       <footer className="site-footer container">
