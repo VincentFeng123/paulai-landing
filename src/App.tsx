@@ -355,6 +355,14 @@ export default function App() {
       </header>
       <main id="main">
         <section className="hero-shell" aria-labelledby="hero-title">
+          <img
+            className="hero-background"
+            src={asset("hero-smoke.jpg")}
+            alt=""
+            width="2400"
+            height="1600"
+            fetchPriority="high"
+          />
           <div className="hero container">
             <h1 className="hero-enter" id="hero-title">
               You had

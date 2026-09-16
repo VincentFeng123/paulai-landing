@@ -1,6 +1,6 @@
 # Paul · You had better plans.
 
-A monochrome, responsive landing page for Paul, the local-first desktop companion for intentional screen time. The design uses an original asymmetrical composition, self-hosted Instrument Sans, generous black space, and borderless floating product moments. Paul’s original glyph and interactive desktop preview retain the app’s identity.
+A responsive landing page for Paul, the local-first desktop companion for intentional screen time. The design uses an original asymmetrical composition, self-hosted Instrument Sans, a full-screen hero with the supplied smoky artwork, and borderless floating product moments. Paul’s original glyph and interactive desktop preview retain the app’s identity.
 
 ## Run
 
@@ -41,6 +41,7 @@ The `docs/ci-workflow.yml` template runs the production build and browser tests 
 - `src/AppPreview.tsx` — interactive, illustrative desktop app preview.
 - `src/styles.css` and `src/preview.css` — page and preview styles.
 - `public/paul-mark.svg` and `public/paul-icon.png` — original Paul branding.
+- `public/hero-smoke.jpg` — optimized web copy of the supplied hero background.
 - `tests/landing.spec.ts` — browser checks.
 
 Animation API reference: [GSAP ScrollTrigger](https://gsap.com/docs/v3/Plugins/ScrollTrigger/).
