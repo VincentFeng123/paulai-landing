@@ -1319,7 +1319,40 @@ summary:focus-visible {
   }
 }
 
-/* The supplied artwork fills the first screen, with content free to grow on short displays. */
+/* One native sticky background spans the hero and every story chapter. */
+.intro-sequence {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+.intro-backdrop {
+  --intro-blur: 0px;
+  --intro-shade: 0;
+  grid-area: 1 / 1;
+  align-self: start;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+.intro-content {
+  grid-area: 1 / 1;
+  position: relative;
+  min-width: 0;
+  z-index: 1;
+}
+.intro-backdrop::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: #000;
+  opacity: var(--intro-shade);
+}
 .hero-shell {
   isolation: isolate;
   min-height: 100vh;
@@ -1328,20 +1361,21 @@ summary:focus-visible {
 }
 .hero-background {
   position: absolute;
-  inset: 0;
-  z-index: -2;
-  width: 100%;
-  height: 100%;
+  inset: -48px;
+  z-index: 0;
+  width: calc(100% + 96px);
+  height: calc(100% + 96px);
   object-fit: cover;
   object-position: center;
-  filter: grayscale(1);
+  filter: grayscale(1) blur(var(--intro-blur));
+  will-change: filter;
   pointer-events: none;
 }
-.hero-shell::before {
+.intro-backdrop::after {
   content: "";
   position: absolute;
   inset: 0;
-  z-index: -1;
+  z-index: 2;
   pointer-events: none;
   background:
     linear-gradient(90deg, #0008, #0006 55%, #0009),
@@ -1375,7 +1409,7 @@ summary:focus-visible {
   .hero-background {
     object-position: 62% center;
   }
-  .hero-shell::before {
+  .intro-backdrop::after {
     background: linear-gradient(#0006, #0008 65%, #000);
   }
 }
@@ -1398,7 +1432,7 @@ summary:focus-visible {
 .is-sticky .flow-panel {
   position: absolute;
   inset: 0;
-  padding-block: 20px;
+  padding-block: 64px 0;
 }
 .is-sticky .scroll-cue {
   display: flex;
@@ -1434,7 +1468,7 @@ summary:focus-visible {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
     gap: 18px;
-    padding: 24px 0 6px;
+    padding: 48px 0 0;
   }
   .is-sticky .flow-copy {
     max-width: 100%;

@@ -209,6 +209,17 @@ export default function App() {
     const media = gsap.matchMedia();
     const ctx = gsap.context(() => {
       media.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.to(".intro-backdrop", {
+          "--intro-blur": "14px",
+          "--intro-shade": 0.18,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".hero-shell",
+            start: "top top",
+            end: "bottom top",
+            scrub: 0.5,
+          },
+        });
         gsap.from(".hero-enter", {
           y: 24,
           opacity: 0,
@@ -327,154 +338,162 @@ export default function App() {
         </div>
       </header>
       <main id="main">
-        <section className="hero-shell" aria-labelledby="hero-title">
-          <img
-            className="hero-background"
-            src={asset("hero-smoke.jpg")}
-            alt=""
-            width="2400"
-            height="1600"
-            fetchPriority="high"
-          />
-          <div className="hero container">
-            <h1 className="hero-enter" id="hero-title">
-              You had
-              <br />
-              <span>better plans.</span>
-            </h1>
-            <div className="hero-support hero-enter">
-              <p className="hero-description">
-                Paul helps you catch the mindless scroll, take a breath, and get
-                back to what you meant to do.
-              </p>
-              <div className="hero-actions">
-                <a className="button primary" href="#experience">
-                  Explore Paul <ArrowUpRight size={19} />
-                </a>
-                <a className="hero-story-link" href="#how-it-works">
-                  Meet your moment of pause <ArrowDown size={16} />
-                </a>
-              </div>
-            </div>
+        <div className="intro-sequence">
+          <div className="intro-backdrop" aria-hidden="true">
+            <img
+              className="hero-background"
+              src={asset("hero-smoke.jpg")}
+              alt=""
+              width="2400"
+              height="1600"
+              fetchPriority="high"
+            />
           </div>
-        </section>
+          <div className="intro-content">
+            <section className="hero-shell" aria-labelledby="hero-title">
+              <div className="hero container">
+                <h1 className="hero-enter" id="hero-title">
+                  You had
+                  <br />
+                  <span>better plans.</span>
+                </h1>
+                <div className="hero-support hero-enter">
+                  <p className="hero-description">
+                    Paul helps you catch the mindless scroll, take a breath, and
+                    get back to what you meant to do.
+                  </p>
+                  <div className="hero-actions">
+                    <a className="button primary" href="#experience">
+                      Explore Paul <ArrowUpRight size={19} />
+                    </a>
+                    <a className="hero-story-link" href="#how-it-works">
+                      Meet your moment of pause <ArrowDown size={16} />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </section>
 
-        <section
-          className="flow-section"
-          id="how-it-works"
-          aria-label="How Paul works"
-        >
-          <div className="flow-pin">
-            <div className="flow-top container">
-              <span className="eyebrow">01. HOW PAUL HELPS</span>
-              <span className="scroll-cue">
-                SCROLL TO EXPLORE <ArrowDown size={13} />
-              </span>
-            </div>
-            <div className="flow-navigation container">
-              <div className="flow-track">
-                <span className="flow-progress" />
-              </div>
-              <div className="flow-step-labels">
-                {steps.map((s, i) => (
-                  <span
-                    className={activeStep === i ? "active" : ""}
-                    key={s.label}
-                  >
-                    0{i + 1} <span>{["Notice", "Pause", "Choose"][i]}</span>
+            <section
+              className="flow-section"
+              id="how-it-works"
+              aria-label="How Paul works"
+            >
+              <div className="flow-pin">
+                <div className="flow-top container">
+                  <span className="eyebrow">01. HOW PAUL HELPS</span>
+                  <span className="scroll-cue">
+                    SCROLL TO EXPLORE <ArrowDown size={13} />
                   </span>
-                ))}
+                </div>
+                <div className="flow-navigation container">
+                  <div className="flow-track">
+                    <span className="flow-progress" />
+                  </div>
+                  <div className="flow-step-labels">
+                    {steps.map((s, i) => (
+                      <span
+                        className={activeStep === i ? "active" : ""}
+                        key={s.label}
+                      >
+                        0{i + 1} <span>{["Notice", "Pause", "Choose"][i]}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="flow-panels container">
+                  {steps.map((step, index) => (
+                    <article
+                      className={`flow-panel flow-panel-${index}`}
+                      key={step.label}
+                    >
+                      <div className="flow-copy">
+                        <div className="step-label">
+                          <span>0{index + 1}</span>
+                          {step.label}
+                        </div>
+                        <h2>{step.title}</h2>
+                        <p>{step.description}</p>
+                        <div className="flow-annotation">
+                          <step.icon size={15} strokeWidth={1.5} />
+                          {index === 0
+                            ? "You choose what Paul watches."
+                            : index === 1
+                              ? "Five levels. As gentle or firm as you need."
+                              : "No streaks. No scores. Just you, learning."}
+                        </div>
+                      </div>
+                      <div
+                        className={`intervention-scene scene-${index}`}
+                        aria-label={`Illustrative preview: ${step.label}`}
+                      >
+                        {index === 0 ? (
+                          <div className="floating-notice">
+                            <span className="floating-domain float-layer">
+                              youtube.com <ArrowUpRight size={16} />
+                            </span>
+                            <Mark className="floating-mark float-layer" />
+                            <p className="floating-question float-layer">
+                              What did you
+                              <br />
+                              come here for?
+                            </p>
+                            <div className="floating-answers float-layer">
+                              <span>
+                                Something specific <ArrowRight size={19} />
+                              </span>
+                              <span>Just browsing</span>
+                            </div>
+                          </div>
+                        ) : index === 1 ? (
+                          <div className="floating-pause">
+                            <span className="floating-overline float-layer">
+                              A LITTLE SPACE TO DECIDE
+                            </span>
+                            <div className="floating-timer float-layer">
+                              05<span>:00</span>
+                            </div>
+                            <p className="floating-caption float-layer">
+                              The feed can wait.
+                            </p>
+                            <div className="floating-answers float-layer">
+                              <span>
+                                Take a breath <Pause size={18} />
+                              </span>
+                              <span>Or continue. It’s your call.</span>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="floating-planned">
+                            <span className="floating-overline float-layer">
+                              TIME YOU CHOSE
+                            </span>
+                            <div className="floating-timer float-layer">
+                              20<span>:00</span>
+                            </div>
+                            <span
+                              className="floating-time-rule float-layer"
+                              aria-hidden="true"
+                            />
+                            <p className="floating-caption float-layer">
+                              A tutorial. Then back to your day.
+                            </p>
+                            <span className="floating-domain float-layer">
+                              YouTube · Planned use
+                            </span>
+                          </div>
+                        )}
+                        <span className="scene-caption">
+                          ILLUSTRATIVE PREVIEW
+                        </span>
+                      </div>
+                    </article>
+                  ))}
+                </div>
               </div>
-            </div>
-            <div className="flow-panels container">
-              {steps.map((step, index) => (
-                <article
-                  className={`flow-panel flow-panel-${index}`}
-                  key={step.label}
-                >
-                  <div className="flow-copy">
-                    <div className="step-label">
-                      <span>0{index + 1}</span>
-                      {step.label}
-                    </div>
-                    <h2>{step.title}</h2>
-                    <p>{step.description}</p>
-                    <div className="flow-annotation">
-                      <step.icon size={15} strokeWidth={1.5} />
-                      {index === 0
-                        ? "You choose what Paul watches."
-                        : index === 1
-                          ? "Five levels. As gentle or firm as you need."
-                          : "No streaks. No scores. Just you, learning."}
-                    </div>
-                  </div>
-                  <div
-                    className={`intervention-scene scene-${index}`}
-                    aria-label={`Illustrative preview: ${step.label}`}
-                  >
-                    {index === 0 ? (
-                      <div className="floating-notice">
-                        <span className="floating-domain float-layer">
-                          youtube.com <ArrowUpRight size={16} />
-                        </span>
-                        <Mark className="floating-mark float-layer" />
-                        <p className="floating-question float-layer">
-                          What did you
-                          <br />
-                          come here for?
-                        </p>
-                        <div className="floating-answers float-layer">
-                          <span>
-                            Something specific <ArrowRight size={19} />
-                          </span>
-                          <span>Just browsing</span>
-                        </div>
-                      </div>
-                    ) : index === 1 ? (
-                      <div className="floating-pause">
-                        <span className="floating-overline float-layer">
-                          A LITTLE SPACE TO DECIDE
-                        </span>
-                        <div className="floating-timer float-layer">
-                          05<span>:00</span>
-                        </div>
-                        <p className="floating-caption float-layer">
-                          The feed can wait.
-                        </p>
-                        <div className="floating-answers float-layer">
-                          <span>
-                            Take a breath <Pause size={18} />
-                          </span>
-                          <span>Or continue. It’s your call.</span>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="floating-planned">
-                        <span className="floating-overline float-layer">
-                          TIME YOU CHOSE
-                        </span>
-                        <div className="floating-timer float-layer">
-                          20<span>:00</span>
-                        </div>
-                        <span
-                          className="floating-time-rule float-layer"
-                          aria-hidden="true"
-                        />
-                        <p className="floating-caption float-layer">
-                          A tutorial. Then back to your day.
-                        </p>
-                        <span className="floating-domain float-layer">
-                          YouTube · Planned use
-                        </span>
-                      </div>
-                    )}
-                    <span className="scene-caption">ILLUSTRATIVE PREVIEW</span>
-                  </div>
-                </article>
-              ))}
-            </div>
+            </section>
           </div>
-        </section>
+        </div>
 
         <section
           className="product-stage container"

@@ -45,9 +45,14 @@ async function scrollToAndSettle(page: Page, top: number) {
     .poll(
       async () => {
         const positions = await page
-          .locator(".flow-pin, .float-layer")
+          .locator(".flow-pin, .float-layer, .intro-backdrop")
           .evaluateAll((elements) =>
-            elements.map((element) => element.getBoundingClientRect().top),
+            elements.flatMap((element) => [
+              element.getBoundingClientRect().top,
+              parseFloat(
+                getComputedStyle(element).getPropertyValue("--intro-blur"),
+              ) || 0,
+            ]),
           );
         const unchanged =
           positions.length === previous.length &&
@@ -58,7 +63,7 @@ async function scrollToAndSettle(page: Page, top: number) {
         previous = positions;
         return stableSamples;
       },
-      { intervals: [100], timeout: 5000 },
+      { intervals: [100], timeout: 10000 },
     )
     .toBeGreaterThanOrEqual(4);
 }
@@ -76,6 +81,23 @@ async function flowGeometry(page: Page) {
         layer.getBoundingClientRect().top - pin.getBoundingClientRect().top,
       layerTranslateY:
         transform === "none" ? 0 : new DOMMatrixReadOnly(transform).m42,
+    };
+  });
+}
+
+async function backdropGeometry(page: Page) {
+  return page.locator(".intro-backdrop").evaluate((backdrop) => {
+    const image = backdrop.querySelector<HTMLElement>(".hero-background")!;
+    const style = getComputedStyle(backdrop);
+    const imageFilter = getComputedStyle(image).filter;
+    const blur = `${style.filter} ${imageFilter}`.match(/blur\(([\d.]+)px\)/);
+    return {
+      top: backdrop.getBoundingClientRect().top,
+      height: backdrop.getBoundingClientRect().height,
+      blur: blur ? Number(blur[1]) : 0,
+      imageFilter,
+      overlay: getComputedStyle(backdrop, "::after").backgroundImage,
+      overlayContent: getComputedStyle(backdrop, "::after").content,
     };
   });
 }
@@ -314,6 +336,7 @@ test("reduced motion exposes all three stories in document flow", async ({
   await openPage(page);
   await expect(page.locator(".flow-section.is-sticky")).toHaveCount(0);
   await expect(page.locator(".flow-panel")).toHaveCount(3);
+  const initialBlur = (await backdropGeometry(page)).blur;
   let previousBottom = 0;
   for (const panel of await page.locator(".flow-panel").all()) {
     await panel.scrollIntoViewIfNeeded();
@@ -330,6 +353,10 @@ test("reduced motion exposes all three stories in document flow", async ({
     expect(bounds.position).not.toBe("absolute");
     expect(bounds.top).toBeGreaterThanOrEqual(previousBottom - 1);
     previousBottom = bounds.bottom;
+    expect(
+      (await backdropGeometry(page)).blur,
+      "Reduced motion does not animate background blur",
+    ).toBe(initialBlur);
   }
   await expect(page.locator(".philosophy-word").first()).toHaveCSS(
     "opacity",
@@ -364,22 +391,31 @@ for (const viewport of [
     const hero = await page.locator(".hero-shell").evaluate((element) => ({
       height: element.getBoundingClientRect().height,
       top: element.getBoundingClientRect().top,
-      overlay: getComputedStyle(element, "::before").backgroundImage,
-      overlayContent: getComputedStyle(element, "::before").content,
-      filter: getComputedStyle(element.querySelector(".hero-background")!)
-        .filter,
     }));
+    const background = await backdropGeometry(page);
+    await expect(page.locator(".intro-backdrop")).toHaveCSS(
+      "position",
+      "sticky",
+    );
     expect(hero.height).toBeGreaterThanOrEqual(viewport.height - 1);
     expect(Math.abs(hero.top)).toBeLessThanOrEqual(1);
-    expect(hero.filter).toMatch(/grayscale\(1\)/);
-    expect(hero.overlayContent).not.toBe("none");
-    expect(hero.overlay).toMatch(/rgba?\(0,\s*0,\s*0/);
+    expect(Math.abs(background.top)).toBeLessThanOrEqual(1);
+    expect(Math.abs(background.height - viewport.height)).toBeLessThanOrEqual(
+      1,
+    );
+    expect(background.blur).toBeLessThanOrEqual(0.1);
+    expect(background.imageFilter).toMatch(/grayscale\(1\)/);
+    expect(background.overlayContent).not.toBe("none");
+    expect(background.overlay).toMatch(/rgba?\(0,\s*0,\s*0/);
     await expectNoOverflow(page);
   });
 
   test(`the ${size} sticky story enters smoothly, advances, and releases`, async ({
     page,
   }) => {
+    // This walks through fifteen scroll positions, each awaiting the
+    // scrubbed animation; software-rendered blur can be slower in CI.
+    test.setTimeout(60000);
     await page.setViewportSize(viewport);
     await page.emulateMedia({ reducedMotion: "no-preference" });
     await openPage(page);
@@ -390,6 +426,30 @@ for (const viewport of [
     const start = await section.evaluate(
       (el) => el.getBoundingClientRect().top + window.scrollY,
     );
+
+    // The same image stays at the viewport edge while the hero scrolls away.
+    // Measure the rendered filter, not only the custom property driving it.
+    expect(Math.abs((await backdropGeometry(page)).top)).toBeLessThanOrEqual(1);
+    let previousBlur = (await backdropGeometry(page)).blur;
+    for (const progress of [0.25, 0.5, 0.75, 1]) {
+      await scrollToAndSettle(page, start * progress);
+      const background = await backdropGeometry(page);
+      expect(
+        Math.abs(background.top),
+        `Background stays still at hero progress ${progress}`,
+      ).toBeLessThanOrEqual(1);
+      expect(
+        background.blur,
+        "Blur increases gradually through the hero",
+      ).toBeGreaterThan(previousBlur + 0.5);
+      expect(background.blur).toBeLessThanOrEqual(14.1);
+      previousBlur = background.blur;
+      await expectNoOverflow(page);
+    }
+    expect(
+      previousBlur,
+      "The story starts with the full background blur",
+    ).toBeGreaterThanOrEqual(13.5);
 
     // Before the section reaches the viewport edge, its content travels with
     // the document. A premature fixed pin or fromTo offset breaks these checks.
@@ -435,6 +495,13 @@ for (const viewport of [
       expect(Math.abs((await flowGeometry(page)).pinTop)).toBeLessThanOrEqual(
         1,
       );
+      const background = await backdropGeometry(page);
+      expect(
+        Math.abs(background.top),
+        `The shared background stays pinned behind chapter ${index + 1}`,
+      ).toBeLessThanOrEqual(1);
+      expect(background.blur).toBeGreaterThanOrEqual(13.5);
+      expect(background.blur).toBeLessThanOrEqual(14.1);
       await expect(
         page.locator(".flow-step-labels > span").nth(index),
       ).toHaveClass("active");
@@ -468,6 +535,15 @@ for (const viewport of [
     expect(
       Math.abs((await flowGeometry(page)).pinTop + 90),
     ).toBeLessThanOrEqual(2);
+    const releasedBackground = await backdropGeometry(page);
+    expect(
+      Math.abs(releasedBackground.top + 90),
+      "The background releases upward with the story",
+    ).toBeLessThanOrEqual(2);
+    expect(
+      Math.abs(releasedBackground.top - (await flowGeometry(page)).pinTop),
+    ).toBeLessThanOrEqual(2);
+    await expectNoOverflow(page);
     await page.locator("#your-space").scrollIntoViewIfNeeded();
     await expect(page.locator("#your-space h2")).toBeInViewport();
   });
