@@ -3,16 +3,10 @@ import {
   ArrowDown,
   ArrowRight,
   ArrowUpRight,
-  Check,
   ChevronDown,
-  Command,
   Eye,
   LockKeyhole,
-  Menu,
-  Monitor,
   Pause,
-  Play,
-  ShieldCheck,
   SlidersHorizontal,
   Sparkles,
   X,
@@ -40,13 +34,13 @@ const steps = [
     label: "Notice the moment",
     title: (
       <>
-        Sometimes, you open it
+        Catch the scroll.
         <br />
-        without even thinking.
+        Before it catches you.
       </>
     ),
     description:
-      "Another tab. Another video. Paul notices when you open an app or site you’ve chosen to watch. Awareness is a good place to start.",
+      "You went online for one thing. Now you’re somewhere else. Paul notices when you open the apps and sites you’ve chosen to watch.",
     icon: Eye,
     heading: "A familiar detour.",
     sub: "You opened youtube.com",
@@ -58,8 +52,9 @@ const steps = [
     label: "Make a little space",
     title: (
       <>
-        A small pause.
-        <br />A different possibility.
+        Put a pause
+        <br />
+        in the pattern.
       </>
     ),
     description:
@@ -75,17 +70,17 @@ const steps = [
     label: "Choose what’s next",
     title: (
       <>
-        Your time.
+        Make the next
         <br />
-        Your call.
+        20 minutes yours.
       </>
     ),
     description:
-      "Keep going with intention, plan some time, or step away. Paul helps you make the choice — and understand your patterns as you go.",
+      "Stay for a reason. Set aside some time. Or close the tab. Planned use gives you room to enjoy your screen on purpose.",
     icon: SlidersHorizontal,
-    heading: "Make it intentional.",
+    heading: "Time, on your terms.",
     sub: "You’re in charge",
-    question: "What would feel good right now?",
+    question: "YouTube · Planned use",
     choices: ["Make a little room", "Continue with intention"],
     foot: "Small choices. A little more intention.",
   },
@@ -223,7 +218,6 @@ function MomentDialog({
 
 export default function App() {
   const page = useRef<HTMLDivElement>(null);
-  const [menuOpen, setMenuOpen] = useState(false);
   const [momentOpen, setMomentOpen] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
   useEffect(() => {
@@ -238,23 +232,23 @@ export default function App() {
           ease: "power3.out",
           clearProps: "all",
         });
-        gsap.utils
-          .toArray<HTMLElement>("[data-reveal]")
-          .forEach((el) =>
-            gsap.from(el, {
-              y: 28,
-              opacity: 0,
-              duration: 0.85,
-              ease: "power2.out",
-              scrollTrigger: { trigger: el, start: "top 92%", once: true },
-              clearProps: "all",
-            }),
-          );
+        gsap.utils.toArray<HTMLElement>("[data-reveal]").forEach((el) =>
+          gsap.from(el, {
+            y: 28,
+            opacity: 0,
+            duration: 0.85,
+            ease: "power2.out",
+            scrollTrigger: { trigger: el, start: "top 92%", once: true },
+            clearProps: "all",
+          }),
+        );
         gsap.fromTo(
           ".preview-window",
-          { y: 45 },
+          { y: 60, scale: 0.965, rotateX: 5, transformPerspective: 1200 },
           {
             y: 0,
+            scale: 1,
+            rotateX: 0,
             ease: "none",
             scrollTrigger: {
               trigger: ".product-stage",
@@ -264,6 +258,16 @@ export default function App() {
             },
           },
         );
+        gsap.to(".hero-backdrop", {
+          y: 90,
+          ease: "none",
+          scrollTrigger: {
+            trigger: ".hero-shell",
+            start: "top top",
+            end: "bottom top",
+            scrub: 1,
+          },
+        });
         gsap.from(".philosophy-word", {
           opacity: 0.18,
           stagger: 0.16,
@@ -277,10 +281,10 @@ export default function App() {
         });
       });
       media.add(
-        "(min-width: 850px) and (min-height: 720px) and (prefers-reduced-motion: no-preference)",
+        "(min-width: 1100px) and (min-height: 1000px) and (prefers-reduced-motion: no-preference)",
         () => {
           const panels = gsap.utils.toArray<HTMLElement>(".flow-panel");
-          gsap.set(".flow-pin", { height: "min(780px, 100svh)" });
+          gsap.set(".flow-pin", { height: "100svh" });
           gsap.set(".flow-panels", { position: "relative", flex: 1 });
           gsap.set(panels, { position: "absolute", inset: 0 });
           gsap.set(panels.slice(1), { autoAlpha: 0, y: 28 });
@@ -288,7 +292,7 @@ export default function App() {
             scrollTrigger: {
               trigger: ".flow-pin",
               start: "top top",
-              end: "+=1450",
+              end: "+=1150",
               scrub: 0.65,
               pin: true,
               anticipatePin: 1,
@@ -312,15 +316,6 @@ export default function App() {
       ctx.revert();
     };
   }, []);
-  useEffect(() => {
-    if (!menuOpen) return;
-    const close = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setMenuOpen(false);
-    };
-    window.addEventListener("keydown", close);
-    return () => window.removeEventListener("keydown", close);
-  }, [menuOpen]);
-  const closeMenu = () => setMenuOpen(false);
 
   return (
     <div ref={page}>
@@ -329,82 +324,43 @@ export default function App() {
       </a>
       <header className="site-header">
         <div className="nav-inner container">
-          <a
-            className="brand"
-            href="#"
-            aria-label="Paul home"
-            onClick={closeMenu}
-          >
+          <a className="brand" href="#" aria-label="Paul home">
             <Mark />
             paul
           </a>
-          <nav
-            className={`navigation ${menuOpen ? "is-open" : ""}`}
-            aria-label="Main navigation"
-            id="main-navigation"
-          >
-            <a href="#how-it-works" onClick={closeMenu}>
-              How it works
-            </a>
-            <a href="#your-space" onClick={closeMenu}>
-              Your space
-            </a>
-            <a href="#questions" onClick={closeMenu}>
-              Questions
-            </a>
-          </nav>
-          <a
-            className="button primary nav-cta"
-            href="#experience"
-            onClick={closeMenu}
-          >
-            Meet Paul <ArrowUpRight size={15} />
+          <a className="button primary nav-cta" href="#experience">
+            Explore Paul
           </a>
-          <button
-            className="menu-toggle icon-button"
-            aria-label={menuOpen ? "Close menu" : "Open menu"}
-            aria-expanded={menuOpen}
-            aria-controls="main-navigation"
-            onClick={() => setMenuOpen(!menuOpen)}
-          >
-            {menuOpen ? <X size={21} /> : <Menu size={21} />}
-          </button>
         </div>
       </header>
       <main id="main">
-        <section className="hero container" aria-labelledby="hero-title">
-          <div className="hero-enter hero-eyebrow">
-            <span className="status-dot" /> A QUIET COMPANION FOR YOUR DIGITAL
-            LIFE
-          </div>
-          <h1 className="hero-enter" id="hero-title">
-            A little less scrolling.
-            <br />
-            <span>A little more living.</span>
-          </h1>
-          <p className="hero-enter hero-description">
-            Meet Paul. A thoughtful pause between you and your next scroll.
-            <br className="desktop-break" /> Make room for the things you meant
-            to do.
-          </p>
-          <div className="hero-enter hero-actions">
-            <a className="button primary" href="#experience">
-              Meet your quiet companion <ArrowUpRight size={17} />
-            </a>
-            <a className="text-link" href="#how-it-works">
-              See how it works <ArrowDown size={15} />
-            </a>
-          </div>
-          <div className="hero-enter platform-note">
-            <span>
-              <Command size={13} /> macOS
-            </span>
-            <span className="note-divider" />
-            <span>
-              <Monitor size={13} /> Windows
-            </span>
-            <span className="platform-separator">·</span>
-            <span>Designed to feel at home.</span>
+        <section className="hero-shell" aria-labelledby="hero-title">
+          <img
+            className="hero-backdrop"
+            src={asset("hero-wall-shadows.jpg")}
+            alt=""
+            width="2400"
+            height="1600"
+            fetchPriority="high"
+          />
+          <div className="hero container">
+            <h1 className="hero-enter" id="hero-title">
+              Less scrolling.
+              <br />
+              More living.
+            </h1>
+            <p className="hero-enter hero-description">
+              Your time is yours. Paul helps you notice distracting habits, set
+              your boundaries, and make room for what matters.
+            </p>
+            <div className="hero-enter hero-actions">
+              <a className="button primary" href="#experience">
+                Explore Paul
+              </a>
+              <a className="button secondary" href="#how-it-works">
+                See how it works
+              </a>
+            </div>
           </div>
         </section>
 
@@ -413,23 +369,15 @@ export default function App() {
           id="experience"
           aria-labelledby="preview-title"
         >
-          <div className="preview-caption">
-            <h2 id="preview-title">A little more space for what matters.</h2>
-            <span>
-              MEET YOUR NEW DESKTOP COMPANION <ArrowDown size={13} />
-            </span>
-          </div>
+          <h2 className="sr-only" id="preview-title">
+            Explore the Paul app
+          </h2>
           <div className="preview-window">
             <AppPreview />
           </div>
           <div className="product-under">
-            <span>
-              <LockKeyhole size={13} /> Local-first, by design.
-            </span>
-            <p>A calm place to understand your habits.</p>
-            <span>
-              <span className="status-dot" /> Your attention. Your terms.
-            </span>
+            <p>Made for macOS and Windows.</p>
+            <span>Interactive preview · Sample activity</span>
           </div>
         </section>
 
@@ -438,10 +386,10 @@ export default function App() {
           aria-labelledby="philosophy-title"
         >
           <span className="eyebrow" data-reveal>
-            THE SPACE BETWEEN IMPULSE AND ACTION
+            SOUND FAMILIAR?
           </span>
           <h2 id="philosophy-title">
-            {"You didn’t sit down to lose an hour. Sometimes, all you need is a moment to remember that."
+            {"“Just five minutes” shouldn’t take your whole evening."
               .split(" ")
               .map((word, i) => (
                 <span className="philosophy-word" key={i}>
@@ -449,7 +397,9 @@ export default function App() {
                 </span>
               ))}
           </h2>
-          <p data-reveal>Paul helps you find that moment.</p>
+          <p data-reveal>
+            Your attention is valuable. Start treating it that way.
+          </p>
         </section>
 
         <section
@@ -459,9 +409,7 @@ export default function App() {
         >
           <div className="flow-pin">
             <div className="flow-top container">
-              <span className="eyebrow">
-                A LITTLE MORE INTENTION, ONE MOMENT AT A TIME
-              </span>
+              <span className="eyebrow">01. HOW PAUL HELPS</span>
               <span className="scroll-cue">
                 SCROLL TO EXPLORE <ArrowDown size={13} />
               </span>
@@ -488,22 +436,32 @@ export default function App() {
                           : "No streaks. No scores. Just you, learning."}
                     </div>
                   </div>
-                  <div className="intervention-scene">
-                    <div className="scene-line line-one" />
-                    <div className="scene-line line-two" />
+                  <div className={`intervention-scene scene-${index}`}>
                     <div className="intervention-card">
                       <div className="intervention-top">
                         <span className="brand">
                           <Mark />
                           paul
                         </span>
-                        <span className="eyebrow">A QUIET CHECK-IN</span>
                       </div>
                       <div className="intervention-icon">
                         <step.icon size={25} strokeWidth={1.3} />
                       </div>
                       <p className="intervention-heading">{step.heading}</p>
                       <span className="intervention-sub">{step.sub}</span>
+                      {index === 1 && (
+                        <div className="pause-meter" aria-hidden="true">
+                          {Array.from({ length: 10 }, (_, i) => (
+                            <span key={i} />
+                          ))}
+                        </div>
+                      )}
+                      {index === 2 && (
+                        <div className="planned-time">
+                          20<span>:00</span>
+                          <small>TIME YOU CHOSE</small>
+                        </div>
+                      )}
                       <p className="intervention-question">{step.question}</p>
                       <div
                         className="illustrated-choices"
@@ -517,9 +475,7 @@ export default function App() {
                       </div>
                       <div className="intervention-foot">{step.foot}</div>
                     </div>
-                    <span className="scene-caption">
-                      AN EXAMPLE MOMENT WITH PAUL
-                    </span>
+                    <span className="scene-caption">ILLUSTRATIVE PREVIEW</span>
                   </div>
                 </article>
               ))}
@@ -542,90 +498,13 @@ export default function App() {
           </div>
         </section>
 
-        <section className="your-space container" id="your-space">
-          <div className="section-intro" data-reveal>
-            <span className="eyebrow">SUPPORT THAT FEELS LIKE SUPPORT</span>
-            <h2>
-              Built around you.
-              <br />
-              <span>And the life beyond your screen.</span>
-            </h2>
-          </div>
-          <div className="features">
-            <article data-reveal>
-              <div
-                className="feature-visual boundaries-visual"
-                aria-hidden="true"
-              >
-                <div className="mini-row">
-                  <span>YouTube</span>
-                  <span className="mini-pill">Intent</span>
-                </div>
-                <div className="mini-row">
-                  <span>Reddit</span>
-                  <span className="mini-pill">A gentle pause</span>
-                </div>
-                <div className="mini-row">
-                  <span>Your evening</span>
-                  <span className="mini-pill dark">Protected</span>
-                </div>
-              </div>
-              <span className="feature-number">01 / YOUR BOUNDARIES</span>
-              <h3>A nudge, or a firmer line.</h3>
-              <p>
-                Choose the apps, sites, and times that matter. Adjust the
-                support from a simple check-in to a temporary block.
-              </p>
-            </article>
-            <article data-reveal>
-              <div className="feature-visual rhythm-visual" aria-hidden="true">
-                <div className="rhythm-bars">
-                  {[
-                    26, 43, 31, 68, 50, 82, 64, 45, 35, 56, 39, 27, 42, 30, 22,
-                    16, 24, 14,
-                  ].map((h, i) => (
-                    <span key={i} style={{ height: `${h}%` }} />
-                  ))}
-                </div>
-                <span>Small moments make a clearer picture.</span>
-              </div>
-              <span className="feature-number">02 / YOUR PATTERNS</span>
-              <h3>Understand the habit.</h3>
-              <p>
-                See when a quick check becomes a longer stay. Reflect on what
-                you came for, and how you felt afterward.
-              </p>
-            </article>
-            <article data-reveal>
-              <div className="feature-visual planned-visual" aria-hidden="true">
-                <div className="planned-icon">
-                  <Play size={17} fill="currentColor" />
-                </div>
-                <div>
-                  <strong>A little time, on purpose.</strong>
-                  <span>Planned use · 20 minutes</span>
-                </div>
-                <Check size={17} />
-              </div>
-              <span className="feature-number">03 / YOUR CHOICE</span>
-              <h3>Enjoy your screen, too.</h3>
-              <p>
-                Some time online is time well spent. Plan a session and use it
-                with intention, with room to enjoy it.
-              </p>
-            </article>
-          </div>
-        </section>
-
         <section
           className="privacy-section container"
+          id="your-space"
           aria-labelledby="privacy-title"
         >
           <div className="privacy-copy" data-reveal>
-            <span className="privacy-icon">
-              <ShieldCheck size={27} strokeWidth={1.3} />
-            </span>
-            <span className="eyebrow">YOUR PATTERNS. YOUR CONTROL.</span>
+            <span className="eyebrow">02. YOUR PRIVACY</span>
             <h2 id="privacy-title">
               Personal by nature.
               <br />
@@ -674,8 +553,11 @@ export default function App() {
           aria-labelledby="faq-title"
         >
           <div data-reveal>
-            <span className="eyebrow">A FEW THINGS YOU MIGHT WONDER</span>
-            <h2 id="faq-title">A little clarity.</h2>
+            <span className="eyebrow">03. QUESTIONS</span>
+            <h2 id="faq-title">
+              Questions,
+              <br /> answered.
+            </h2>
           </div>
           <div className="faq-list" data-reveal>
             {faqs.map(([question, answer]) => (
@@ -690,17 +572,21 @@ export default function App() {
           </div>
         </section>
 
-        <section className="closing container" aria-labelledby="closing-title">
-          <Mark className="closing-mark" />
-          <span className="eyebrow" data-reveal>
-            A QUIETER RELATIONSHIP WITH YOUR SCREEN
-          </span>
+        <section className="closing" aria-labelledby="closing-title">
+          <img
+            className="closing-backdrop"
+            src={asset("closing-black-ribbons.jpg")}
+            alt=""
+            width="2400"
+            height="1200"
+            loading="lazy"
+          />
           <h2 id="closing-title" data-reveal>
-            Make a little room.
+            There’s a whole life
             <br />
-            <span>See what comes back.</span>
+            <span>on the other side.</span>
           </h2>
-          <p data-reveal>Start with one small pause.</p>
+          <p data-reveal>Start by taking a moment back.</p>
           <button
             className="button primary"
             onClick={() => setMomentOpen(true)}
@@ -724,7 +610,7 @@ export default function App() {
           target="_blank"
           rel="noreferrer"
         >
-          Made with care <ArrowUpRight size={13} />
+          Made for a more intentional life. <ArrowUpRight size={13} />
         </a>
         <span>© {new Date().getFullYear()} Paul</span>
       </footer>

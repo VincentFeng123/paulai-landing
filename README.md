@@ -1,6 +1,6 @@
-# Paul · A little more intention
+# Paul · Less scrolling. More living.
 
-A minimal, responsive landing page for Paul, the local-first desktop companion for intentional screen time. The visual system follows the Electron app: its original glyph, native typography, monochrome palette, thin borders, and 12px controls.
+A monochrome, responsive landing page for Paul, the local-first desktop companion for intentional screen time. The design follows Nosca’s centered composition, pure black background, white pill buttons, Helvetica typography, and generous spacing. Paul’s original glyph and interactive desktop preview retain the app’s identity.
 
 ## Run
 
@@ -23,8 +23,8 @@ For a fresh test environment, install the test browser with `npx playwright inst
 
 - Interactive Today, Boundaries, and Patterns dashboard views with explicitly illustrative sample data.
 - Working preview controls for intervention levels, watched items, planned use, and pause/resume.
-- A GSAP ScrollTrigger story that moves through noticing, pausing, and choosing. Desktop scenes are pinned and scrub with native scrolling. Mobile and reduced-motion layouts present all three scenes in normal document flow.
-- Responsive navigation, native FAQ disclosures, keyboard-accessible tabs, and a native modal demo with focus restoration.
+- A GSAP ScrollTrigger story that moves through noticing, pausing, and choosing. Large desktop scenes (at least 1100px wide and 1000px tall) are pinned for a short scroll and scrub with native scrolling. The hero background moves with the page, the dashboard lifts into view, and the central message reveals as you scroll. Smaller screens and reduced-motion layouts present all three scenes in normal document flow.
+- A sparse header with a direct preview link, native FAQ disclosures, keyboard-accessible tabs, and a native modal demo with focus restoration.
 - All preview state lives in memory. The site makes no analytics, form, AI, or activity-recording requests.
 
 The primary call to action is the interactive preview. There are no public installer links or waitlist forms. The FAQ states this explicitly. Replace the preview CTA only after a real distribution destination is available.
@@ -41,6 +41,7 @@ The `docs/ci-workflow.yml` template runs the production build and browser tests 
 - `src/AppPreview.tsx` — interactive, illustrative desktop app preview.
 - `src/styles.css` and `src/preview.css` — page and preview styles.
 - `public/paul-mark.svg` and `public/paul-icon.png` — original Paul branding.
+- `public/hero-wall-shadows.jpg` and `public/closing-black-ribbons.jpg` — monochrome background assets reused from the owner’s Nosca landing page.
 - `tests/landing.spec.ts` — browser checks.
 
 Animation API reference: [GSAP ScrollTrigger](https://gsap.com/docs/v3/Plugins/ScrollTrigger/).

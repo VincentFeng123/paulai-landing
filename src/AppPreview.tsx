@@ -93,7 +93,7 @@ function RhythmChart() {
                 cy={cy}
                 r="3"
                 fill="currentColor"
-                stroke="white"
+                stroke="#111111"
                 strokeWidth="1.5"
               />
             ))}
@@ -473,68 +473,6 @@ export default function AppPreview() {
             </>
           )}
         </div>
-        <aside
-          className="preview-rail"
-          aria-label="Paul companion and sample activity"
-        >
-          <section className="preview-profile">
-            <div className="preview-avatar">
-              <PaulMark />
-              <span
-                className={`preview-profile-status ${paused ? "is-paused" : ""}`}
-              />
-            </div>
-            <h4>Paul</h4>
-            <p>A quiet companion</p>
-            <div className="preview-target">
-              <span>The change you chose</span>
-              <p>
-                Less scrolling.
-                <br />
-                More of my evening.
-              </p>
-            </div>
-          </section>
-          <div className="preview-activity-heading">
-            <span />
-            <h4>Activity</h4>
-            <span />
-          </div>
-          <div className="preview-activity-entry">
-            <Globe2 size={15} strokeWidth={1.5} />
-            <div>
-              <div>
-                <strong>YouTube</strong>
-                <time>2:14 PM</time>
-              </div>
-              <p>12 min · Completed</p>
-              <span>“Watch something specific”</span>
-            </div>
-          </div>
-          <div className="preview-activity-entry">
-            <Globe2 size={15} strokeWidth={1.5} />
-            <div>
-              <div>
-                <strong>Reddit</strong>
-                <time>11:32 AM</time>
-              </div>
-              <p>8 min · Interrupted</p>
-              <span>A small pause. A different choice.</span>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="preview-rail-action"
-            onClick={() => openPanel("Patterns")}
-          >
-            See the bigger picture
-            <ArrowRight size={14} />
-          </button>
-          <span className="preview-local">
-            <Shield size={12} strokeWidth={1.5} />
-            Local by default. Yours by design.
-          </span>
-        </aside>
       </div>
       <div className="preview-sample-label">
         <span className="preview-status-dot" />
